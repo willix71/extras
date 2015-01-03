@@ -1,7 +1,6 @@
 package w.dao.populator.entity;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -9,8 +8,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.init.DatabasePopulator;
 
 import w.dao.DaoHelper;
@@ -19,6 +19,8 @@ import w.dao.populator.entity.AbstractEntityPopulator.FieldGenerator;
 @SuppressWarnings("rawtypes")
 public class EntityDatabasePopulator implements DatabasePopulator {
 
+   private static final Logger LOGGER = LoggerFactory.getLogger(EntityDatabasePopulator.class);
+   
    EntityMetaFactory metaFactory;
 
    FieldGenerator idGenerator;
@@ -61,7 +63,7 @@ public class EntityDatabasePopulator implements DatabasePopulator {
       return this;
    }
 
-   public EntityDatabasePopulator addEntities(Iterable os) {
+   public EntityDatabasePopulator addAllEntities(Iterable os) {
       for(Object o: os) {
          addEntity(o);
       }
@@ -92,10 +94,13 @@ public class EntityDatabasePopulator implements DatabasePopulator {
    
    @Override
    public void populate(Connection connection) throws SQLException {
+      
       if (!preStatements.isEmpty()) {
+         LOGGER.info("Executing pre statements");
          populate(connection, preStatements);
       }
       
+      LOGGER.info("Inserting...");
       for (Map.Entry<Class, Collection<Object>> entry : entities.entrySet()) {
          populate(connection, entry.getKey(), entry.getValue());
       }
@@ -106,6 +111,7 @@ public class EntityDatabasePopulator implements DatabasePopulator {
       try {
          // loop over rows
          for (String s: statements) {
+            LOGGER.debug("Executing {}", s);
             statement.execute(s);
          }
       } finally {
@@ -115,6 +121,7 @@ public class EntityDatabasePopulator implements DatabasePopulator {
    
    @SuppressWarnings("unchecked")
    protected void populate(Connection connection, Class clazz, Iterable<Object> entities) throws SQLException {
+      LOGGER.info("Inserting {}", clazz);
       EntityInserter inserter = new EntityInserter(metaFactory.getEntityMeta(clazz), idGenerator, versionGenerator);
       inserter.populate(connection, entities);
    }

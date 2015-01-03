@@ -34,7 +34,14 @@ public class PrimitiveFieldPopulator<T> extends AbstractFieldPopulator<T> {
            .put(BigDecimal.class, Types.DECIMAL) //
            .build();
    
+   public static final int getPrimitiveType(Class<?> clazz, Field field, String name) {
+      Integer type = DEFAULT_SQL_TYPES.get(field.getType());
+      if (type == null) {
+         throw new IllegalArgumentException("Can't get primitive type for field " + field + " of class "+ clazz);
+      }
+      return type.intValue();
+   }
    public PrimitiveFieldPopulator(Class<?> clazz, Field field, String name) {
-      super(clazz, field, name, DEFAULT_SQL_TYPES.get(field.getType()));
+      super(clazz, field, name, getPrimitiveType(clazz, field, name));
    }
 }

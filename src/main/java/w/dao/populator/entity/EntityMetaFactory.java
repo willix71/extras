@@ -12,6 +12,8 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
@@ -89,7 +91,7 @@ public class EntityMetaFactory {
    protected <T> String getTableName(Class<T> clazz) {
       Table e = clazz.getAnnotation(Table.class);
       if (e == null) {
-         return null;
+         return clazz.getSimpleName();
       } else {
          return Strings.isNullOrEmpty(e.schema()) ? e.name() : e.schema() + "." + e.name();
       }
@@ -135,6 +137,8 @@ public class EntityMetaFactory {
             JoinColumn jcolumn = field.getAnnotation(JoinColumn.class);
             if (jcolumn != null) { // TODO do something for jcolumn.insertable()
                fieldname = jcolumn.name();
+            } else if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToMany.class)) {
+               continue;
             }
          }
          

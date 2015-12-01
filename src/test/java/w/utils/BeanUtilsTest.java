@@ -1,9 +1,13 @@
 package w.utils;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.core.annotation.Order;
 
+import junit.framework.Assert;
+import w.junit.extras.OrderedJUnit4ClassRunner;
+
+@RunWith(OrderedJUnit4ClassRunner.class)
 public class BeanUtilsTest {
 
     class A {
@@ -69,6 +73,7 @@ public class BeanUtilsTest {
 
     // --- Setter v1
     @Test
+    @Order(1)
     public void testSimpleSetter() {
         Bean b = new Bean("William");
 
@@ -79,6 +84,7 @@ public class BeanUtilsTest {
 
     // TODO this only works because the method has already been cached
     @Test
+    @Order(2)
     public void testNullSetter() {
         Bean b = new Bean("William");
 

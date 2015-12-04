@@ -3,14 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>w.utils</groupId>
 	<artifactId>Extras</artifactId>
-	<version>0.0.6-SNAPSHOT</version>
-
+	<version>0.0.7-SNAPSHOT</version>
 	<properties>
 		<!-- maven-compiler-plugin , aka JAVA Compiler 1.7 -->
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.compiler.source>1.7</maven.compiler.source>
 
-		<spring.source>3.1.1.RELEASE</spring.source>
+		<spring.source>4.1.8.RELEASE</spring.source>
 	</properties>
 
 	<dependencies>

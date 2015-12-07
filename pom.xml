@@ -10,6 +10,13 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 
 		<spring.source>4.1.8.RELEASE</spring.source>
+		<guava.source>18.0</guava.source>
+
+		<org.slf4j.version>1.7.7</org.slf4j.version>
+		<logback.version>1.1.2</logback.version>
+
+		<junit.version>4.11</junit.version>
+		<mockito.version>1.9.5</mockito.version>
 	</properties>
 
 	<dependencies>
@@ -17,7 +24,12 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${spring.source}</version>
-			
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -39,6 +51,7 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- No longer needed with Sring 4 
 		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
@@ -52,11 +65,12 @@
 			<version>2.2</version>
 			<scope>runtime</scope>
 		</dependency>
-		
+		-->
+
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<version>${guava.source}</version>
 		</dependency>
 
 		<!-- ========== Logging ========== -->
@@ -64,37 +78,58 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.6</version>
-			<optional />
+			<version>${org.slf4j.version}</version>
+			<optional/>
 		</dependency>
 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.0.6</version>
-			<optional />
+			<version>${logback.version}</version>
+			<optional/>
 		</dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${org.slf4j.version}</version>
+            <optional/>
+        </dependency>
+        
 		<!-- ========== Testing ========== -->
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.version}</version>
+           <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>3.1.1.RELEASE</version>
+			<version>${spring.source}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.9.5</version>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -109,8 +144,5 @@
 
 	<build>
 		<finalName>Extras</finalName>
-		<!-- <plugins> <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> 
-			<version>2.3.2</version> <configuration> <source>1.6</source> <target>1.6</target> 
-			</configuration> </plugin> </plugins> -->
 	</build>
 </project>

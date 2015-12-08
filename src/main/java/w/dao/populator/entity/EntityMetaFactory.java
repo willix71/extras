@@ -32,9 +32,10 @@ public class EntityMetaFactory {
    
    private Constructor<? extends FieldPopulator<?>> defaultPopulatatorClass;
    
+   private boolean defaultPopulatorAppended = false;
+   
    public EntityMetaFactory() {
       setDefaultPopulatatorClasses(PrimitiveFieldPopulator.class);
-      addPopulatatorClasses(StringPopulator.class, DatePopulator.class, EnumPopulator.class);          
    }
 
    public EntityMetaFactory(Class<?>... populatatorClasses) {
@@ -159,6 +160,11 @@ public class EntityMetaFactory {
    protected <T> FieldPopulator<T> getFieldPopulator(final Class<?> clazz, final Field field, final String fieldName) {
       Constructor<? extends FieldPopulator<?>> populatatorClass = defaultPopulatatorClass;
 
+      if (!defaultPopulatorAppended) {
+    	  addPopulatatorClasses(StringPopulator.class, DatePopulator.class, EnumPopulator.class);      
+    	  defaultPopulatorAppended = true;
+      }
+      
       for (Map.Entry<Class<?>, Constructor<? extends FieldPopulator<?>>> entry : this.populatatorClasses.entrySet()) {
          if (entry.getKey().isAssignableFrom(field.getType())) {
             populatatorClass = entry.getValue();

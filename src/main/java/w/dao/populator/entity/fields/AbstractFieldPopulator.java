@@ -7,8 +7,8 @@ import w.dao.populator.entity.FieldPopulator;
 public class AbstractFieldPopulator<T> implements FieldPopulator<T> {
 
 	private final Field field;
-   private final String name;
-   private final int type;
+	private final String name;
+	private final int type;
 
 	public AbstractFieldPopulator(Class<?> clazz, Field field, String name, int type) {
 		this.name = name;
@@ -28,27 +28,27 @@ public class AbstractFieldPopulator<T> implements FieldPopulator<T> {
 		return this.type;
 	}
 
-   @Override
-   public Field getField() {
-      return field;
-   }
+	@Override
+	public Field getField() {
+		return field;
+	}
 
-   @Override
-   public Object getValue(T entity) {
-      try {
-         return field.get(entity);
-      } catch (IllegalArgumentException | IllegalAccessException e) {
-         throw new RuntimeException(name + " getValue error for " + entity, e);
-      }
-   }
-   
-   @Override
-   public void setValue(T entity, Object o) {
-      try {
-         field.set(entity, o);
-      } catch (IllegalArgumentException | IllegalAccessException e) {
-         throw new RuntimeException(name + " setValue error for " + entity, e);
-      }
-   }
+	@Override
+	public Object getValue(T entity) {
+		try {
+			return field.get(entity);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(name + " getValue error for " + entity, e);
+		}
+	}
+
+	@Override
+	public void setValue(T entity, Object o) {
+		try {
+			field.set(entity, o);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(name + " setValue error for " + entity, e);
+		}
+	}
 
 }

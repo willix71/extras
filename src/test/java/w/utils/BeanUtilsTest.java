@@ -1,10 +1,10 @@
 package w.utils;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.core.annotation.Order;
 
-import junit.framework.Assert;
 import w.junit.extras.OrderedJUnit4ClassRunner;
 
 @RunWith(OrderedJUnit4ClassRunner.class)

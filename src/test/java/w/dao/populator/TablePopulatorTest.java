@@ -6,8 +6,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.TreeMap;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.DefaultResourceLoader;

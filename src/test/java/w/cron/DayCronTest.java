@@ -14,17 +14,17 @@ public class DayCronTest {
 		DayCron cron = new DayCron(new int[] { 1, 4 }, null, null);
 		Assert.assertEquals("1,4 * *", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014));
-		Assert.assertEquals(DateUtils.getDate(1,2,2014), next);
+		Date next = cron.next(DateUtils.toDate(15,1,2014));
+		Assert.assertEquals(DateUtils.toDate(1,2,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(4,2,2014), next);
+		Assert.assertEquals(DateUtils.toDate(4,2,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(1,3,2014), next);
+		Assert.assertEquals(DateUtils.toDate(1,3,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(4,3,2014), next);
+		Assert.assertEquals(DateUtils.toDate(4,3,2014), next);
 	}
 
 	@Test
@@ -32,14 +32,14 @@ public class DayCronTest {
 		DayCron cron = new DayCron(null, null, new int[] { 1, 4 }); // MON and THU
 		Assert.assertEquals("* * MON,THU", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014)); // WED
-		Assert.assertEquals(DateUtils.getDate(16,1,2014), next); // THU
+		Date next = cron.next(DateUtils.toDate(15,1,2014)); // WED
+		Assert.assertEquals(DateUtils.toDate(16,1,2014), next); // THU
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(20,1,2014), next); // MON
+		Assert.assertEquals(DateUtils.toDate(20,1,2014), next); // MON
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(23,1,2014), next); // THU
+		Assert.assertEquals(DateUtils.toDate(23,1,2014), next); // THU
 	}
 
 	@Test
@@ -47,14 +47,14 @@ public class DayCronTest {
 		DayCron cron = new DayCron(null, null, new int[] { 6, 7 });
 		Assert.assertEquals("* * SAT,SUN", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014)); // WED
-		Assert.assertEquals(DateUtils.getDate(18,1,2014), next); // SAT
+		Date next = cron.next(DateUtils.toDate(15,1,2014)); // WED
+		Assert.assertEquals(DateUtils.toDate(18,1,2014), next); // SAT
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(19,1,2014), next); // SUN
+		Assert.assertEquals(DateUtils.toDate(19,1,2014), next); // SUN
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(25,1,2014), next); // SAT
+		Assert.assertEquals(DateUtils.toDate(25,1,2014), next); // SAT
 	}
 
 	@Test
@@ -62,19 +62,19 @@ public class DayCronTest {
 		DayCron cron = new DayCron(null, new int[] { 1, 4 }, null); // JAN and APR
 		Assert.assertEquals("* JAN,APR *", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(29,1,2014));
-		Assert.assertEquals(DateUtils.getDate(30,1,2014), next);
+		Date next = cron.next(DateUtils.toDate(29,1,2014));
+		Assert.assertEquals(DateUtils.toDate(30,1,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(31,1,2014), next);
+		Assert.assertEquals(DateUtils.toDate(31,1,2014), next);
 
 		for (int i = 1; i < 31; i++) {
 			next = cron.next(next);
-			Assert.assertEquals(DateUtils.getDate(i, 4, 2014), next);
+			Assert.assertEquals(DateUtils.toDate(i, 4, 2014), next);
 		}
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(1,1,2015), next);
+		Assert.assertEquals(DateUtils.toDate(1,1,2015), next);
 	}
 
 	@Test
@@ -82,17 +82,17 @@ public class DayCronTest {
 		DayCron cron = new DayCron(new int[] { -1 }, null, null);
 		Assert.assertEquals("LAST * *", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014));
-		Assert.assertEquals(DateUtils.getDate(31,1,2014), next);
+		Date next = cron.next(DateUtils.toDate(15,1,2014));
+		Assert.assertEquals(DateUtils.toDate(31,1,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(28,2,2014), next);
+		Assert.assertEquals(DateUtils.toDate(28,2,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(31,3,2014), next);
+		Assert.assertEquals(DateUtils.toDate(31,3,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(30,4,2014), next);
+		Assert.assertEquals(DateUtils.toDate(30,4,2014), next);
 	}
 
 	@Test
@@ -100,29 +100,29 @@ public class DayCronTest {
 		DayCron cron = new DayCron(new int[] { -1 }, new int[] { 1, 2, 3, 4, 5, 6, 7 }, new int[] { 5 });
 		Assert.assertEquals("LAST JAN-JUL FRI", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014));
-		Assert.assertEquals(DateUtils.getDate(31,1,2014), next);
+		Date next = cron.next(DateUtils.toDate(15,1,2014));
+		Assert.assertEquals(DateUtils.toDate(31,1,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(28,2,2014), next);
+		Assert.assertEquals(DateUtils.toDate(28,2,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(28,3,2014), next);
+		Assert.assertEquals(DateUtils.toDate(28,3,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(25,4,2014), next);
+		Assert.assertEquals(DateUtils.toDate(25,4,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(30,5,2014), next);
+		Assert.assertEquals(DateUtils.toDate(30,5,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(27,6,2014), next);
+		Assert.assertEquals(DateUtils.toDate(27,6,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(25,7,2014), next);
+		Assert.assertEquals(DateUtils.toDate(25,7,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(30,1,2015), next);
+		Assert.assertEquals(DateUtils.toDate(30,1,2015), next);
 	}
 
 	@Test
@@ -130,26 +130,26 @@ public class DayCronTest {
 		DayCron cron = new DayCron(new int[] { 15, -1 }, new int[] { 1, 4, 7, 10 }, null);
 		Assert.assertEquals("LAST,15 JAN,APR,JUL,OCT *", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014));
-		Assert.assertEquals(DateUtils.getDate(31,1,2014), next);
+		Date next = cron.next(DateUtils.toDate(15,1,2014));
+		Assert.assertEquals(DateUtils.toDate(31,1,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(15,4,2014), next);
+		Assert.assertEquals(DateUtils.toDate(15,4,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(30,4,2014), next);
+		Assert.assertEquals(DateUtils.toDate(30,4,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(15,7,2014), next);
+		Assert.assertEquals(DateUtils.toDate(15,7,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(31,7,2014), next);
+		Assert.assertEquals(DateUtils.toDate(31,7,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(15,10,2014), next);
+		Assert.assertEquals(DateUtils.toDate(15,10,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(31,10,2014), next);
+		Assert.assertEquals(DateUtils.toDate(31,10,2014), next);
 	}
 
 	@Test
@@ -157,11 +157,11 @@ public class DayCronTest {
 		DayCron cron = new DayCron(new int[] { 13 }, null, new int[] { 5 });
 		Assert.assertEquals("13 * FRI", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014));
-		Assert.assertEquals(DateUtils.getDate(13,6,2014), next);
+		Date next = cron.next(DateUtils.toDate(15,1,2014));
+		Assert.assertEquals(DateUtils.toDate(13,6,2014), next);
 
 		next = cron.next(next);
-		Assert.assertEquals(DateUtils.getDate(13,2,2015), next);
+		Assert.assertEquals(DateUtils.toDate(13,2,2015), next);
 	}
 
 	@Test
@@ -169,7 +169,7 @@ public class DayCronTest {
 		DayCron cron = new DayCron(new int[] { 31 }, new int[] { 2 }, null);
 		Assert.assertEquals("31 FEB *", cron.getExpression());
 
-		Date next = cron.next(DateUtils.getDate(15,1,2014));
+		Date next = cron.next(DateUtils.toDate(15,1,2014));
 		Assert.assertNull(next);
 	}
 

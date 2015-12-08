@@ -1,8 +1,14 @@
 package w.dao;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +24,8 @@ public class DaoHelper {
 	private static final Logger logger = LoggerFactory.getLogger(DaoHelper.class);
 
 	/**
-	 * Object that when it's toString is called, returns one value and another one for every other call.
+	 * Object that when it's toString is called, returns one value and another
+	 * one for every other call.
 	 *
 	 * @return
 	 */
@@ -107,4 +114,27 @@ public class DaoHelper {
 		}
 	}
 
+	/**
+	 * Executes the lines of a script
+	 */
+	public void excuteScript(DataSource ds, Reader source) throws IOException, SQLException {
+		logger.info("Executing script");
+		
+		try (BufferedReader reader = new BufferedReader(source);
+				Statement stament = ds.getConnection().createStatement()) {
+			String line, sql = "";
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("--"))
+					continue;
+				line = line.trim();
+				if (line.isEmpty() || line.equals(";"))
+					continue;
+				sql += line;
+				if (line.endsWith(";")) {
+					stament.execute(sql);
+					sql = "";
+				}
+			}
+		}
+	}
 }

@@ -13,61 +13,83 @@ import java.util.Set;
 
 public class CollectionBeanUtils implements IBeanUtils {
 
-	private IBeanUtils delegate = new SimpleBeanUtils();
+	private final IBeanUtils delegate;
 	
-	private boolean expandCollection = true;
+	/**
+	 * Expand the collection up to the index value when SETTING a value
+	 */
+	private final boolean expandCollection;
 	
-	public CollectionBeanUtils() {}
+	public CollectionBeanUtils() {
+		this(true, new SimpleBeanUtils());
+	}
 
 	public CollectionBeanUtils(boolean expandCollection) {
-		this.expandCollection = expandCollection;
+		this(expandCollection, new SimpleBeanUtils());
 	}
 	
 	public CollectionBeanUtils(boolean expandCollection, IBeanUtils delegate) {
 		this.expandCollection = expandCollection;
 		this.delegate = delegate;
 	}
-	
-	@Override
-	public Class<?> getPropertyType(Class<?> clazz, String propertyName) {
-		int startLimit = propertyName.indexOf("[");
+
+	public Class<?> getPropertyTypeFor(Class<?> clazz, String propertyName, int startLimit) {
 		if (startLimit < 0) {
 			return delegate.getPropertyType(clazz, propertyName);
 		}
 		
-		throwError("Can't know the generic type of a colletion", null);
+		String[] parts = split(propertyName, startLimit);
+		
+		Class<?> propertyClass = delegate.getPropertyType(clazz, parts[0]);
+		if (propertyClass == null) {
+			throwError("Can't extract the generic type of a null collection type", null);
+			
+		} else if (propertyClass.isArray()) {
+			return propertyClass.getComponentType();
+		}
 		
 		return null;
 	}
-
+	
+	@Override
+	public Class<?> getPropertyType(Class<?> clazz, String propertyName) {
+		int startLimit = propertyName.indexOf("[");
+		Class<?> propertyType = getPropertyTypeFor(clazz, propertyName, startLimit);
+		if (propertyType == null) {
+			throwError("Can't extract the generic type of a generic colletion", null);
+		}
+		return propertyType;
+	}
+	
 	@Override
 	public Class<?> getPropertyType(Object o, String propertyName) {
 		int startLimit = propertyName.indexOf("[");
-		if (startLimit < 0) {
-			return delegate.getPropertyType(o, propertyName);
+		Class<?> propertyType = getPropertyTypeFor(o.getClass(), propertyName, startLimit);
+		if (propertyType != null) {
+			return propertyType;
 		}
+		
+		// we will retrieve the first element of the collection and create a new instance
 		String[] parts = split(propertyName, startLimit);
 		Object values = delegate.getPropertyValue(o, parts[0]);
-		if (values == null) {
-			// TODO if the type is an array, we could instantiate an object...
-			
+		if (values == null) {		
 			throwError("Can't know the generic type of a null colletion", null);
 		} else if (values instanceof Map) {
-			Map m = (Map) values;
+			@SuppressWarnings("unchecked")
+			Map<String,?> m = (Map<String,?>) values;
+			
 			if (m.size()==0) {
 				throwError("Can't know the generic type of an empty map", null);
 			} else {
 				return m.values().iterator().next().getClass();
 			}
 		} else if (values instanceof Iterable) {
-			Iterator iter = ((Iterable) values).iterator();
+			Iterator<?> iter = ((Iterable<?>) values).iterator();
 			if (!iter.hasNext()) {
 				throwError("Can't know the generic type of an empty iterable", null);
 			} else {
 				return iter.next().getClass();
 			}
-		} else if (values.getClass().isArray()) {
-			return values.getClass().getComponentType();
 		}
 		
 		throwError("Can't know the generic type of an unknown collection " + values.getClass(), null);
@@ -84,19 +106,20 @@ public class CollectionBeanUtils implements IBeanUtils {
 		String[] parts = split(propertyName, startLimit);
 		Object values = delegate.getPropertyValue(o, parts[0]);
 		if (values == null) {
-			return null;
+			return null;			
 		} else if (values instanceof Map) {
-			return ((Map) values).get(parts[1]);
+			return ((Map<?,?>) values).get(parts[1]);
 		} else {
 			int index = Integer.parseInt(parts[1]);
 			if (values instanceof Collection) {
-				Collection collection = (Collection) values;
+				Collection<?> collection = (Collection<?>) values;
 				if (index >= collection.size()) {
-					return null; // index too big
+					// index too big
+					return null;
 				} else if (collection instanceof List) {
-					return ((List) collection).get(index);
+					return ((List<?>) collection).get(index);
 				} else {
-					Iterator iter = ((Iterable) collection).iterator();
+					Iterator<?> iter = ((Iterable<?>) collection).iterator();
 					for(int i=0; i<index;i++) {
 						iter.next();
 					}
@@ -104,14 +127,16 @@ public class CollectionBeanUtils implements IBeanUtils {
 				}
 			} else if (values instanceof Iterable) {
 				int i = 0;
-				for (Iterator iter = ((Iterable) values).iterator(); iter.hasNext(); ) {
+				for (Iterator<?> iter = ((Iterable<?>) values).iterator(); iter.hasNext(); ) {
 					if (i==index) return iter.next();
 				}
-				return null; // index too big
+				// index too big
+				return null; 
 			} else {
 				int length = getArrayLengthOrError(values);	
 				if (index >= length) {
-					return null; // index too big
+					 // index too big	
+					return null;
 				} else {
 					return Array.get(values, index);
 				}
@@ -135,12 +160,12 @@ public class CollectionBeanUtils implements IBeanUtils {
 				throwError("Can't set property on a null collection for property " + parts[0] + " on " + o.getClass(), null);
 
 			// create the collection
-			Class clazz = delegate.getPropertyType(o.getClass(), parts[0]);
-			values = newCollection(o.getClass(), parts[0], propertyValue, clazz);
+			values = newCollection(o.getClass(), parts[0], propertyValue, null);
 			delegate.setPropertyValue(o, parts[0], values);
 		}
 		
-		Object newValue = parts[1].length()==0?appendValue(values, propertyValue):setValue(values, parts[1], propertyValue);
+		boolean emptyIndex = parts[1].length()==0;
+		Object newValue = emptyIndex?appendValue(values, propertyValue):setValue(values, parts[1], propertyValue);
 		if (newValue != null) {
 			delegate.setPropertyValue(o, parts[0], newValue);
 		}
@@ -148,7 +173,9 @@ public class CollectionBeanUtils implements IBeanUtils {
 
 	protected Object appendValue(Object values, Object propertyValue) {
 		if (values instanceof Collection) {
-			( (Collection) values ).add(propertyValue);
+			@SuppressWarnings("unchecked")
+			Collection<Object> collection = (Collection<Object>) values;
+			collection.add(propertyValue);
 			return null;
 			
 		}  else {
@@ -163,11 +190,14 @@ public class CollectionBeanUtils implements IBeanUtils {
 
 	protected Object setValue(Object values, String at, Object propertyValue) {
 		if (values instanceof Map) {
-			((Map) values).put(at, propertyValue);
+			@SuppressWarnings("unchecked")
+			Map<String,Object> map = (Map<String,Object>) values;
+			map.put(at, propertyValue);
 		} else {
 			int index = Integer.parseInt(at);
 			if (values instanceof Collection) {
-				Collection collection = (Collection) values;
+				@SuppressWarnings("unchecked")
+				Collection<Object> collection = (Collection<Object>) values;
 				if (index >= collection.size()) {
 					if (!expandCollection) {
 						throwError("Can't set value, collection is too small", null);
@@ -178,7 +208,7 @@ public class CollectionBeanUtils implements IBeanUtils {
 					collection.add(propertyValue);
 					
 				} else if (collection instanceof List) {
-					((List) collection).set(index, propertyValue);
+					((List<Object>) collection).set(index, propertyValue);
 				} else {
 					throwError("Can't set value on a non-list collection of type " + values.getClass(), null);
 				}
@@ -199,38 +229,38 @@ public class CollectionBeanUtils implements IBeanUtils {
 	}
       
     protected Object appendValueOnArray(Object array, int index, Object value) {
-    	Class t = array.getClass().getComponentType();
+    	Class<?> t = array.getClass().getComponentType();
     	if (Boolean.TYPE==t) {
 			boolean[] arr = Arrays.copyOf((boolean[])array, index+1);
-			arr[index] = (boolean) value;
+			arr[index] = value==null? true : (boolean) value;
 			return arr;
 		} else if (Byte.TYPE==t) {
 			byte[] arr = Arrays.copyOf((byte[])array, index+1);
-			arr[index] = ((Number) value).byteValue();
+			arr[index] = value==null? 0 : ((Number) value).byteValue();
 			return arr;
 		} else if (Short.TYPE==t) {
 			short[] arr = Arrays.copyOf((short[])array, index+1);
-			arr[index] = ((Number) value).shortValue();
+			arr[index] = value==null? 0 : ((Number) value).shortValue();
 			return arr;
 		} else if (Integer.TYPE==t) {
 			int[] arr = Arrays.copyOf((int[])array, index+1);
-			arr[index] = ((Number) value).intValue();
+			arr[index] = value==null? 0 : ((Number) value).intValue();
 			return arr;
 		} else if (Long.TYPE==t) {
 			long[] arr = Arrays.copyOf((long[])array, index+1);
-			arr[index] = ((Number) value).longValue();
+			arr[index] = value==null? 0 : ((Number) value).longValue();
 			return arr;
 		} else if (Float.TYPE==t) {
 			float[] arr = Arrays.copyOf((float[])array, index+1);
-			arr[index] = ((Number) value).floatValue();
+			arr[index] = value==null? 0 : ((Number) value).floatValue();
 			return arr;
 		} else if (Double.TYPE==t) {
 			double[] arr = Arrays.copyOf((double[])array, index+1);
-			arr[index] = ((Number) value).doubleValue();
+			arr[index] = value==null? 0 : ((Number) value).doubleValue();
 			return arr;
 		} else if (Character.TYPE==t) {
 			char[] arr = Arrays.copyOf((char[])array, index+1);
-			arr[index] = (char) value;
+			arr[index] = (char) (value==null?0:value);
 			return arr;
 		} else {
 			Object[] arr = Arrays.copyOf((Object[])array, index+1);
@@ -251,7 +281,11 @@ public class CollectionBeanUtils implements IBeanUtils {
 		throw new IllegalArgumentException(message);
 	}
 	
-    protected Object newCollection(Class containerClass, String propertyName, Object properyValue, Class collectionClass) {
+    @SuppressWarnings("rawtypes")
+	protected Object newCollection(Class containerClass, String propertyName, Object properyValue, Class collectionClass) {
+    	if (collectionClass == null) {
+    		collectionClass = delegate.getPropertyType(containerClass, propertyName);
+    	}
 		if (collectionClass.isInterface()) {
 	    	if (List.class.isAssignableFrom(collectionClass)) {
 				return new ArrayList();

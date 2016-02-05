@@ -103,7 +103,18 @@ public class CollectionBeanUtilsTest {
 	}
 	
 	@Test
-	public void testType() {
+	public void testTypeByClass() {
+		//Assert.assertEquals(B.class, collectionBeanUtils.getPropertyType(A.class, "listOfBs[1]"));
+		//Assert.assertEquals(B.class, collectionBeanUtils.getPropertyType(A.class, "setOfBs[1]"));
+		//Assert.assertEquals(B.class, collectionBeanUtils.getPropertyType(A.class, "mapOfBs[one]"));
+		
+		Assert.assertEquals(B.class, collectionBeanUtils.getPropertyType(A.class, "arrayOfBs[1]"));
+		
+		Assert.assertEquals(Integer.TYPE, collectionBeanUtils.getPropertyType(A.class, "arrayOfInts[1]"));
+	}
+	
+	@Test
+	public void testTypeByValue() {
 		A a = new A(new B("one"));
 		
 		Assert.assertEquals(B.class, collectionBeanUtils.getPropertyType(a, "listOfBs[1]"));
@@ -169,7 +180,7 @@ public class CollectionBeanUtilsTest {
 		Assert.assertEquals("quatre", collectionBeanUtils.getPropertyValue(a, "listOfBs[3].name"));
 		
 		collectionBeanUtils.setPropertyValue(a, "setOfBs[]", new B("quatre"));	
-		Assert.assertEquals(4, ((Set) collectionBeanUtils.getPropertyValue(a, "setOfBs")).size());
+		Assert.assertEquals(4, ((Set<?>) collectionBeanUtils.getPropertyValue(a, "setOfBs")).size());
 		
 		collectionBeanUtils.setPropertyValue(a, "arrayOfBs[]", new B("quatre"));
 		Assert.assertEquals("quatre", collectionBeanUtils.getPropertyValue(a, "arrayOfBs[3].name"));
@@ -186,9 +197,11 @@ public class CollectionBeanUtilsTest {
 		collectionBeanUtils.setPropertyValue(a, "listOfBs[]", new B("one"));
 		Assert.assertEquals("one", collectionBeanUtils.getPropertyValue(a, "listOfBs[0].name"));
 		
+		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "setOfBs[0]")); 
 		collectionBeanUtils.setPropertyValue(a, "setOfBs[]", new B("one"));
 		Assert.assertEquals("one", collectionBeanUtils.getPropertyValue(a, "setOfBs[0].name"));
 		
+		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "mapOfBs[test]"));
 		collectionBeanUtils.setPropertyValue(a, "mapOfBs[test]", new B("one"));
 		Assert.assertEquals("one", collectionBeanUtils.getPropertyValue(a, "mapOfBs[test].name"));
 		
@@ -198,4 +211,35 @@ public class CollectionBeanUtilsTest {
 		collectionBeanUtils.setPropertyValue(a, "arrayOfInts[]",4);
 		Assert.assertEquals(4, collectionBeanUtils.getPropertyValue(a, "arrayOfInts[0]"));
 	}
+	
+	@Test
+	public void testNestedAndExpanded() {
+		A a = new A();
+		
+		// easy with arrays
+		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "arrayOfBs[0].name"));
+		collectionBeanUtils.setPropertyValue(a, "arrayOfBs[0].name", "quatre");
+		Assert.assertEquals("quatre", collectionBeanUtils.getPropertyValue(a, "arrayOfBs[0].name"));
+		
+		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "arrayOfInts[0]"));
+		collectionBeanUtils.setPropertyValue(a, "arrayOfInts[0]",4);
+		Assert.assertEquals(4, collectionBeanUtils.getPropertyValue(a, "arrayOfInts[0]"));
+
+		a = new A(new B("one"));
+		
+		// there is one entity in my collection
+		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "listOfBs[1].name"));
+		collectionBeanUtils.setPropertyValue(a, "listOfBs[1].name", "two");
+		Assert.assertEquals("two", collectionBeanUtils.getPropertyValue(a, "listOfBs[1].name"));
+		
+		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "setOfBs[1].name")); 
+		collectionBeanUtils.setPropertyValue(a, "setOfBs[1].name", "two");
+		Assert.assertEquals("two", collectionBeanUtils.getPropertyValue(a, "setOfBs[1].name"));
+		
+		// there is one entity in my map
+		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "mapOfBs[test]"));
+		collectionBeanUtils.setPropertyValue(a, "mapOfBs[test]", new B("one"));
+		Assert.assertEquals("one", collectionBeanUtils.getPropertyValue(a, "mapOfBs[test].name"));
+	}
+
 }

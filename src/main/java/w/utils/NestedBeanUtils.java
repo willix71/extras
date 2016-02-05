@@ -7,21 +7,26 @@ public class NestedBeanUtils implements IBeanUtils {
 		String propertyName;
 	}
 	
-	private IBeanUtils delegate = new SimpleBeanUtils();
+	private final IBeanUtils delegate;
 	
-	private boolean createPath = true;
+	/**
+	 * Create the path when GETTING sub elements
+	 */
+	private final boolean createPath;
 	
-	public NestedBeanUtils() {}
+	public NestedBeanUtils() {
+		this(true, new SimpleBeanUtils());
+	}
 
 	public NestedBeanUtils(boolean createPath) {
-		this.createPath = createPath;
+		this(createPath, new SimpleBeanUtils());
 	}
 	
 	public NestedBeanUtils(boolean createPath, IBeanUtils delegate) {
 		this.createPath = createPath;
 		this.delegate = delegate;
 	}
-	
+
 	private Holder getLastElementInPath(Object o, String propertyName) {
 		String[] names = propertyName.split("\\.");
 		int last = names.length-1;
@@ -29,7 +34,8 @@ public class NestedBeanUtils implements IBeanUtils {
 			Object target = delegate.getPropertyValue(o, names[i]);
 			if (target == null) {
 				if (createPath) {
-					target = newPathElement(delegate.getPropertyType(o.getClass(), names[i]));
+					// create the path up to the last object
+					target = newPathElement(delegate.getPropertyType(o, names[i]));
 					delegate.setPropertyValue(o, names[i], target);
 				} else {
 					return null;
@@ -67,6 +73,8 @@ public class NestedBeanUtils implements IBeanUtils {
 	@Override
 	public Class<?> getPropertyType(Object o, String propertyName) {
 		if (propertyName.contains(".")) {
+			// retrieve the type on the instance for as long as possible
+			// if one instance is null, fall back to fetching the type by class
 			Class<?> clazz = o.getClass();
 			for(String name: propertyName.split("\\.")) {
 				if (o==null) {

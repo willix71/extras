@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+   		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+   		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+   		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<context:annotation-config/>
+
+	<bean id="main" class="w.spring.extras.generator.model.A" />
+	
+	<bean class="w.spring.extras.generator.model.C" />
+	
+	<bean class="w.spring.extras.generator.model.D" />
+	
+	<bean class="w.spring.extras.generator.BBeanGenerator" >
+		<constructor-arg index="0" value="w.spring.extras.generator.model.B" />
+		<constructor-arg index="1">
+			<list>
+				<value>b10</value>
+				<value>b11</value>
+				<value>b12</value>
+			</list>
+		</constructor-arg>
+	</bean>
+</beans>

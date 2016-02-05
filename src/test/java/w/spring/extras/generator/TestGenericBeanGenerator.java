@@ -1,14 +1,10 @@
 package w.spring.extras.generator;
 
-import javax.xml.ws.Holder;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import w.spring.extras.GenericBeanGenerator;
 import w.spring.extras.generator.model.A;

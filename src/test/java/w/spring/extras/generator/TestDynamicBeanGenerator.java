@@ -2,9 +2,6 @@ package w.spring.extras.generator;
 
 import java.util.Arrays;
 
-import javax.xml.ws.Holder;
-
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;

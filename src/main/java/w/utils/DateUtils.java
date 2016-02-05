@@ -11,17 +11,6 @@ public class DateUtils {
         Calendar.HOUR_OF_DAY, Calendar.MINUTE, Calendar.SECOND, // time fields 
 			Calendar.MILLISECOND };
 
-	private static final int[] MAX = { 31, 12, Integer.MAX_VALUE, 23, 59, 59, 999 };
-	private static final int[] MIN = { 1, 1, 0, 0, 0, 0, 0 };
-
-	/**
-	 * @deprecated use toDate
-	 */
-	@Deprecated
-	public static Date getDate(int... values) {
-		return getDate(values);
-	}
-
 	/**
 	 * Returns a date according to passed in date and time values.
 	 * 
@@ -30,37 +19,24 @@ public class DateUtils {
 	 * @return
 	 */
 	public static Date toDate(int... values) {
-		// perform quick checks
-		for (int i = 0; i < values.length && i < MAX.length; i++) {
-			if (values[i] < MIN[i] || values[i] > MAX[i]) {
-				throw new IllegalArgumentException("Value " + i + " is out of range");
+		Calendar cal = Calendar.getInstance();
+		
+		if (values.length > 1) values[1]--; // Month is zero based in Calendar!!!
+
+		// perform simple validations	
+		for (int index = 0; index < values.length && index < FIELDS.length; index++) {
+			if (values[index] < cal.getMinimum(FIELDS[index]) || values[index] > cal.getMaximum(FIELDS[index])) {
+				throw new IllegalArgumentException("Value " + index + " is out of range");
 			}
 		}
-
-		Calendar cal = Calendar.getInstance();
-
-		// do not overwrite date fields if no values are passed
-		// i.e. use today's date
-		int index = 3;
 
 		// Set the passed in fields
-		if (values.length > 0) {
-			cal.set(FIELDS[0], values[0]); // start with the day of month
-			if (values.length > 1) {
-            cal.set(FIELDS[1], values[1] - 1); // Month is zero based in Calendar!!!
-				if (values.length > 2) {
-					index = 2;
-
-					// Copy other fields
-					for (; index < values.length && index < FIELDS.length; index++) {
-						cal.set(FIELDS[index], values[index]);
-					}
-				}
-			}
+		for (int index = 0; index < values.length && index < FIELDS.length; index++) {
+			cal.set(FIELDS[index], values[index]);
 		}
 
-		// Clear the remaining fields
-		for (; index < FIELDS.length; index++) {
+		// Clears the remaining time fields
+		for (int index = Math.max(3, values.length); index < FIELDS.length; index++) {
 			cal.set(FIELDS[index], 0);
 		}
 

@@ -65,6 +65,26 @@ public class NestedBeanUtils implements IBeanUtils {
 	}
 
 	@Override
+	public Class<?> getPropertyType(Object o, String propertyName) {
+		if (propertyName.contains(".")) {
+			Class<?> clazz = o.getClass();
+			for(String name: propertyName.split("\\.")) {
+				if (o==null) {
+					clazz = delegate.getPropertyType(clazz, propertyName);
+				} else {
+					o = delegate.getPropertyType(o, name);
+					if (o==null) {
+						clazz = delegate.getPropertyType(clazz, propertyName);
+					}
+				}
+			}
+			return clazz;
+		} else {
+			return delegate.getPropertyType(o, propertyName);
+		}
+	}
+	
+	@Override
 	public Object getPropertyValue(Object o, String propertyName) {
 		if (propertyName.contains(".")) {
 			Holder h = getLastElementInPath(o, propertyName);

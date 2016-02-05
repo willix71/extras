@@ -58,6 +58,16 @@ public class SimpleBeanUtils implements IBeanUtils {
     }
 	
 	@Override
+	public Class<?> getPropertyType(Object o, String propertyName) {
+        try {
+        	BeanProperty pn = getBeanPropertyFor(o, propertyName);
+        	return pn.type;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to find property " + propertyName + " for bean " + (o==null?null:o.getClass()), e);
+        }
+    }
+	
+	@Override
     public Object getPropertyValue(Object o, String propertyName) {
         try {
         	BeanProperty pn = getBeanPropertyFor(o, propertyName);

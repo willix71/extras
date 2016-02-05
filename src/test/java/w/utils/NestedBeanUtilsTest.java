@@ -3,10 +3,6 @@ package w.utils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import w.utils.BeanUtilsNestedTest.A;
-import w.utils.BeanUtilsNestedTest.B;
-import w.utils.BeanUtilsNestedTest.C;
-
 public class NestedBeanUtilsTest {
 
 	static NestedBeanUtils nestedBeanUtils = new NestedBeanUtils();
@@ -64,7 +60,7 @@ public class NestedBeanUtilsTest {
     public void testSetNestedValue() {
     	A a = new A(new B(new C()));
     	
-    	BeanUtils.setNestedValue2(a, "b.c.value", 4);
+    	nestedBeanUtils.setPropertyValue(a, "b.c.value", 4);
     	
     	Assert.assertEquals(4,nestedBeanUtils.getPropertyValue(a, "b.c.value"));
     }

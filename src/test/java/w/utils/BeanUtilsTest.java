@@ -10,43 +10,65 @@ import w.junit.extras.OrderedJUnit4ClassRunner;
 @RunWith(OrderedJUnit4ClassRunner.class)
 public class BeanUtilsTest {
 
-    class A {
+	interface I {}
+	
+	interface II extends I {}
+	
+    class A implements II {
     }
 
     class B extends A {
     }
 
+    class C extends B {
+    }
+    
     class Bean {
         String name;
         A a;
-
+        A a2;
+        A a3;
+        I i;
+        
         public Bean(String name) {
             super();
             this.name = name;
         }
 
-        public String getName() {
-            return name;
-        }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public A getA() { return a;}
+        public void setA(A a) { this.a = a; }
 
-        public void setName(String name) {
-            this.name = name;
-        }
+        public A getA2() { return a2;}
+        public void setA2(A a2) { this.a2 = a2; }
+        
+        public A getA3() { return a3;}
+        public void setA3(A a3) { this.a3 = a3; }
 
-        public A getA() {
-            return a;
-        }
-
-        public void setA(A a) {
-            this.a = a;
-        }
+        public I getI() { return i;}
+        public void setI(I i) { this.i = i; } 
+        //public void setI(II i) { this.i = i; } 
     }
 
     class SubBean extends Bean {
+    	boolean setA2Called = false;
+    	boolean setA3Called = false;
         public SubBean(String name) {
             super(name);
         }
 
+        @Override
+        public void setA2(A a) {
+            super.setA(a);
+            setA2Called = true;
+        }
+        
+        // overloading
+        public void setA3(B b) {
+            super.setA(b);
+            setA3Called = true;
+        }
     }
 
     // --- Getter
@@ -148,5 +170,53 @@ public class BeanUtilsTest {
         BeanUtils.setPropertyValue2(bean, "a", b);
 
         Assert.assertEquals(b, bean.getA());
+    }
+    
+    @Test
+    public void testSetterOfSubBeanWithSubClass2() {
+    	SubBean bean = new SubBean("William");
+        B b = new B();
+
+        BeanUtils.setPropertyValue2(bean, "a", b);
+
+        Assert.assertEquals(b, bean.getA());
+    }
+    
+    @Test
+    public void testOverridenSetterOfSubBeanWithSubSubClass2() {
+    	SubBean bean = new SubBean("William");
+        C c = new C();
+
+        BeanUtils.setPropertyValue2(bean, "a2", c);
+
+        Assert.assertEquals(c, bean.getA());
+        
+        Assert.assertTrue(bean.setA2Called);
+    }
+    
+    @Test
+    public void testOverloadedSetterOfSubBeanWithSubClass() {
+    	SubBean bean = new SubBean("William");
+    	C c = new C();
+
+        BeanUtils.setPropertyValue2(bean, "a3", c);
+
+        Assert.assertEquals(c, bean.getA());
+        
+        Assert.assertTrue(bean.setA3Called);
+    }
+    
+    @Test
+    public void testInterfacedArguments() {
+    	SubBean bean = new SubBean("William");
+    	II i = new C();
+
+        BeanUtils.setPropertyValue2(bean, "i", i);
+
+        // succeeds because there is only ONE methed getI()
+        Assert.assertEquals(i, bean.getI());
+        Assert.assertNull(bean.getA());
+        Assert.assertNull(bean.getA2());
+        Assert.assertNull(bean.getA3());
     }
 }

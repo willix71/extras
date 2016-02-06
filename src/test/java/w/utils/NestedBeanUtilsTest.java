@@ -52,8 +52,8 @@ public class NestedBeanUtilsTest {
     	Assert.assertNull(a.getB());
     	Assert.assertNull(nestedBeanUtils.getPropertyValue(a, "b.c"));
 
-    	// it was created when fetching c 
-    	Assert.assertNotNull(a.getB());
+    	// it was not created when getting c 
+    	Assert.assertNull(a.getB());
     }
     
     @Test
@@ -73,6 +73,8 @@ public class NestedBeanUtilsTest {
     	
     	nestedBeanUtils.setPropertyValue(a, "b.c.value", 4);
     	
+    	Assert.assertNotNull(a.getB().getC());
+    	Assert.assertEquals(4,a.getB().getC().getValue());
     	Assert.assertEquals(4,nestedBeanUtils.getPropertyValue(a, "b.c.value"));
     }
 }

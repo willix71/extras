@@ -103,6 +103,33 @@ public class CollectionBeanUtilsTest {
 	}
 	
 	@Test
+	public void testGetLast() {
+		A a = new A(new B("one"), new B("two"), new B("three"));
+		
+		Assert.assertEquals("three", collectionBeanUtils.getPropertyValue(a, "listOfBs[].name"));
+		
+		Assert.assertEquals("three", collectionBeanUtils.getPropertyValue(a, "setOfBs[].name"));
+		
+		Assert.assertEquals("three", collectionBeanUtils.getPropertyValue(a, "arrayOfBs[].name"));
+		
+		Assert.assertEquals(2, collectionBeanUtils.getPropertyValue(a, "arrayOfInts[]"));
+	}
+	
+	@Test
+	public void testGetNegatifIndex() {
+		A a = new A(new B("one"), new B("two"), new B("three"));
+		
+		Assert.assertEquals("two", collectionBeanUtils.getPropertyValue(a, "listOfBs[-2].name"));
+		
+		// negatif index for sets always return the last element only
+		Assert.assertEquals("three", collectionBeanUtils.getPropertyValue(a, "setOfBs[-2].name"));
+		
+		Assert.assertEquals("two", collectionBeanUtils.getPropertyValue(a, "arrayOfBs[-2].name"));
+		
+		Assert.assertEquals(1, collectionBeanUtils.getPropertyValue(a, "arrayOfInts[-2]"));
+	}
+	
+	@Test
 	public void testTypeByClass() {
 		//Assert.assertEquals(B.class, collectionBeanUtils.getPropertyType(A.class, "listOfBs[1]"));
 		//Assert.assertEquals(B.class, collectionBeanUtils.getPropertyType(A.class, "setOfBs[1]"));
@@ -228,17 +255,24 @@ public class CollectionBeanUtilsTest {
 		a = new A(new B("one"));
 		
 		// there is one entity in my collection
+		Assert.assertEquals(1,a.getListOfBs().size());
 		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "listOfBs[1].name"));
 		collectionBeanUtils.setPropertyValue(a, "listOfBs[1].name", "two");
+		Assert.assertEquals(2,a.getListOfBs().size());
 		Assert.assertEquals("two", collectionBeanUtils.getPropertyValue(a, "listOfBs[1].name"));
 		
+		
+		Assert.assertEquals(1,a.getSetOfBs().size());
 		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "setOfBs[1].name")); 
 		collectionBeanUtils.setPropertyValue(a, "setOfBs[1].name", "two");
-		Assert.assertEquals("two", collectionBeanUtils.getPropertyValue(a, "setOfBs[1].name"));
+		Assert.assertEquals(2,a.getSetOfBs().size());
+		Assert.assertEquals("two", collectionBeanUtils.getPropertyValue(a, "setOfBs[0].name"));
 		
 		// there is one entity in my map
+		Assert.assertEquals(1,a.getMapOfBs().size());
 		Assert.assertNull(collectionBeanUtils.getPropertyValue(a, "mapOfBs[test]"));
 		collectionBeanUtils.setPropertyValue(a, "mapOfBs[test]", new B("one"));
+		Assert.assertEquals(2,a.getMapOfBs().size());
 		Assert.assertEquals("one", collectionBeanUtils.getPropertyValue(a, "mapOfBs[test].name"));
 	}
 

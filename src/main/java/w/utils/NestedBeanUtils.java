@@ -27,13 +27,13 @@ public class NestedBeanUtils implements IBeanUtils {
 		this.delegate = delegate;
 	}
 
-	private Holder getLastElementInPath(Object o, String propertyName) {
+	private Holder getLastElementInPath(Object o, String propertyName, boolean createIfNull) {
 		String[] names = propertyName.split("\\.");
 		int last = names.length-1;
 		for(int i=0;i<last;i++) {
 			Object target = delegate.getPropertyValue(o, names[i]);
 			if (target == null) {
-				if (createPath) {
+				if (createIfNull) {
 					// create the path up to the last object
 					target = newPathElement(delegate.getPropertyType(o, names[i]));
 					delegate.setPropertyValue(o, names[i], target);
@@ -95,7 +95,7 @@ public class NestedBeanUtils implements IBeanUtils {
 	@Override
 	public Object getPropertyValue(Object o, String propertyName) {
 		if (propertyName.contains(".")) {
-			Holder h = getLastElementInPath(o, propertyName);
+			Holder h = getLastElementInPath(o, propertyName, false);
 			if (h == null) { return null; }
 			return delegate.getPropertyValue(h.target, h.propertyName);
 		} else {
@@ -106,7 +106,7 @@ public class NestedBeanUtils implements IBeanUtils {
 	@Override
 	public void setPropertyValue(Object o, String propertyName, Object propertyValue) {
 		if (propertyName.contains(".")) {
-			Holder h = getLastElementInPath(o, propertyName);
+			Holder h = getLastElementInPath(o, propertyName, createPath);
 			delegate.setPropertyValue(h.target, h.propertyName, propertyValue);
 		} else {
 			delegate.setPropertyValue(o, propertyName, propertyValue);

@@ -11,6 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * IBeanUtils that deals with collection and properties of the like 'name[index]' for Collection and arrays.
+ * If the property has no index (i.e. 'name[]'), it will get or set the value of the last element.
+ * If the index is negatif, it will count from backwards (list and arrays). So -1 is the last, -2 is the one before...
+ * 
+ * If the target is a Map, it will fetch perform a get on the map (the key must be a string).
+ * 
+ * @author wkeyser
+ *
+ */
 public class CollectionBeanUtils implements IBeanUtils {
 
 	private final IBeanUtils delegate;
@@ -33,7 +43,7 @@ public class CollectionBeanUtils implements IBeanUtils {
 		this.delegate = delegate;
 	}
 
-	public Class<?> getPropertyTypeFor(Class<?> clazz, String propertyName, int startLimit) {
+	protected Class<?> getPropertyTypeFor(Class<?> clazz, String propertyName, int startLimit) {
 		if (startLimit < 0) {
 			return delegate.getPropertyType(clazz, propertyName);
 		}
@@ -41,8 +51,8 @@ public class CollectionBeanUtils implements IBeanUtils {
 		String[] parts = split(propertyName, startLimit);
 		
 		Class<?> propertyClass = delegate.getPropertyType(clazz, parts[0]);
-		if (propertyClass == null) {
-			throwError("Can't extract the generic type of a null collection type", null);
+		if (propertyClass == null) { // unknown collection type
+			throwError("Can't extract the generic type of a unkown collection", null);
 			
 		} else if (propertyClass.isArray()) {
 			return propertyClass.getComponentType();
@@ -56,7 +66,7 @@ public class CollectionBeanUtils implements IBeanUtils {
 		int startLimit = propertyName.indexOf("[");
 		Class<?> propertyType = getPropertyTypeFor(clazz, propertyName, startLimit);
 		if (propertyType == null) {
-			throwError("Can't extract the generic type of a generic colletion", null);
+			throwError("Can't extract the generic type of a generic collection", null);
 		}
 		return propertyType;
 	}
@@ -69,11 +79,11 @@ public class CollectionBeanUtils implements IBeanUtils {
 			return propertyType;
 		}
 		
-		// we will retrieve the first element of the collection and create a new instance
+		// we will retrieve the first element of the collection and create a new instance of it
 		String[] parts = split(propertyName, startLimit);
 		Object values = delegate.getPropertyValue(o, parts[0]);
 		if (values == null) {		
-			throwError("Can't know the generic type of a null colletion", null);
+			throwError("Can't know the generic type of an unknown colletion", null);
 		} else if (values instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String,?> m = (Map<String,?>) values;
@@ -92,7 +102,7 @@ public class CollectionBeanUtils implements IBeanUtils {
 			}
 		}
 		
-		throwError("Can't know the generic type of an unknown collection " + values.getClass(), null);
+		throwError("Can't know the generic type of unknown collection type " + values.getClass(), null);
 		
 		return null;
     }
@@ -110,26 +120,31 @@ public class CollectionBeanUtils implements IBeanUtils {
 		} else if (values instanceof Map) {
 			return ((Map<?,?>) values).get(parts[1]);
 		} else {
-			int index = Integer.parseInt(parts[1]);
-			if (values instanceof Collection) {
-				Collection<?> collection = (Collection<?>) values;
-				if (index >= collection.size()) {
-					// index too big
-					return null;
-				} else if (collection instanceof List) {
-					return ((List<?>) collection).get(index);
-				} else {
-					Iterator<?> iter = ((Iterable<?>) collection).iterator();
-					for(int i=0; i<index;i++) {
-						iter.next();
+			int index = parts[1].length()==0?-1:Integer.parseInt(parts[1]);
+			if (values instanceof Iterable) {
+				if (values instanceof Collection) {
+					Collection<?> collection = (Collection<?>) values;
+					if (index >= collection.size()) {
+						// index too big
+						return null;
+					} else if (collection instanceof List) {
+						List<?> list = (List<?>) collection;					
+						if (index<0) {
+							return list.get(list.size()+index);
+						} else {
+							return list.get(index);
+						}
 					}
-					return iter.next();
-				}
-			} else if (values instanceof Iterable) {
-				int i = 0;
+				} 
+				
+				int i = 0; 
+				Object element=null;
 				for (Iterator<?> iter = ((Iterable<?>) values).iterator(); iter.hasNext(); ) {
-					if (i==index) return iter.next();
+					element = iter.next();
+					if (i++ == index) return element;
 				}
+				if (index<0) return element; // last element only
+				
 				// index too big
 				return null; 
 			} else {
@@ -137,6 +152,8 @@ public class CollectionBeanUtils implements IBeanUtils {
 				if (index >= length) {
 					 // index too big	
 					return null;
+				} else if (index<0) {
+					return Array.get(values, length+index);
 				} else {
 					return Array.get(values, index);
 				}
@@ -167,6 +184,7 @@ public class CollectionBeanUtils implements IBeanUtils {
 		boolean emptyIndex = parts[1].length()==0;
 		Object newValue = emptyIndex?appendValue(values, propertyValue):setValue(values, parts[1], propertyValue);
 		if (newValue != null) {
+			// the value has been changed, so set the new value
 			delegate.setPropertyValue(o, parts[0], newValue);
 		}
 	}
@@ -184,6 +202,7 @@ public class CollectionBeanUtils implements IBeanUtils {
 				throwError("Can't append value, array is too small", null);
 			}
 			
+			// return the new array so that it is saved
 			return appendValueOnArray(values,length,propertyValue);
 		}
 	}
@@ -208,19 +227,26 @@ public class CollectionBeanUtils implements IBeanUtils {
 					collection.add(propertyValue);
 					
 				} else if (collection instanceof List) {
-					((List<Object>) collection).set(index, propertyValue);
+					List<Object> list = (List<Object>) collection;					
+					if (index<0) {
+						list.set(list.size()+index, propertyValue);
+					} else {
+						list.set(index, propertyValue);
+					}
 				} else {
 					throwError("Can't set value on a non-list collection of type " + values.getClass(), null);
 				}
 			}  else {
 				int length = getArrayLengthOrError(values);
-				if (index < length) {
+				if (index < 0) {
+					Array.set(values, length+index, propertyValue);
+				} else if (index < length) {
 					Array.set(values, index, propertyValue);
 				} else {
 					if (!expandCollection) {
 						throwError("Can't set value, array is too small", null);
 					}
-
+					// return the new array so that it is saved
 					return appendValueOnArray(values, index, propertyValue);
 				}
 			}

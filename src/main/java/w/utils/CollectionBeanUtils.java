@@ -30,6 +30,8 @@ public class CollectionBeanUtils implements IBeanUtils {
 	 */
 	private final boolean expandCollection;
 	
+	private Map<String, Class<?>> collectionTypes = new HashMap<String, Class<?>>();
+	
 	public CollectionBeanUtils() {
 		this(true, new SimpleBeanUtils());
 	}
@@ -43,14 +45,27 @@ public class CollectionBeanUtils implements IBeanUtils {
 		this.delegate = delegate;
 	}
 
+	public Class<?> getCollectionType(Class<?> clazz, String propertyName) {
+		String name = clazz.getName() + "." + propertyName;
+		return collectionTypes.get(name);
+	}
+	
+	public void setCollectionType(Class<?> clazz, String propertyName, Class<?> propertyClass) {
+		String name = clazz.getName() + "." + propertyName;
+		collectionTypes.put(name, propertyClass);
+	}
+	
 	protected Class<?> getPropertyTypeFor(Class<?> clazz, String propertyName, int startLimit) {
 		if (startLimit < 0) {
 			return delegate.getPropertyType(clazz, propertyName);
 		}
 		
 		String[] parts = split(propertyName, startLimit);
-		
-		Class<?> propertyClass = delegate.getPropertyType(clazz, parts[0]);
+		Class<?> propertyClass = getCollectionType(clazz, parts[0]);
+		if (propertyClass != null) {
+			return propertyClass;
+		}
+		propertyClass = delegate.getPropertyType(clazz, parts[0]);
 		if (propertyClass == null) { // unknown collection type
 			throwError("Can't extract the generic type of a unkown collection", null);
 			

@@ -35,7 +35,7 @@ public class NestedBeanUtils implements IBeanUtils {
 			if (target == null) {
 				if (createIfNull) {
 					// create the path up to the last object
-					target = newPathElement(delegate.getPropertyType(o, names[i]));
+					target = newPathElement(o, names[i]);
 					delegate.setPropertyValue(o, names[i], target);
 				} else {
 					return null;
@@ -48,6 +48,10 @@ public class NestedBeanUtils implements IBeanUtils {
 		holder.target = o;
 		holder.propertyName = names[last];
 		return holder;
+    }
+    
+    protected Object newPathElement(Object o, String propertyName) {
+    	return newPathElement(delegate.getPropertyType(o, propertyName));
     }
     
     protected <T> T newPathElement(Class<T> clazz) {

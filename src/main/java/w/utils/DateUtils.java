@@ -62,7 +62,6 @@ public class DateUtils {
 			throw new IllegalArgumentException("invalid date (can not parse empty date)");
 		}
 
-		Calendar now = Calendar.getInstance();
 		int hour = 0;
 		int minute = 0;
 		int second = 0;
@@ -87,6 +86,7 @@ public class DateUtils {
 
 		String fields[] = parts.length == 0 ? new String[] {} : parts[0].split("[/.-]");
 		try {
+			Calendar now = Calendar.getInstance();
 			int d = fields.length > 0 && fields[0].length()>0 ? Integer.parseInt(fields[0]) : now.get(Calendar.DAY_OF_MONTH);
 			int m = fields.length > 1 && fields[1].length()>0 ? Integer.parseInt(fields[1]) - 1 : now.get(Calendar.MONTH);
 			int y = fields.length > 2 && fields[2].length() > 0 ? Integer.parseInt(fields[2]) : now.get(Calendar.YEAR);
